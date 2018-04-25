@@ -60,6 +60,7 @@ main(int argc, int* argv) {
 			if(cPontos[i] == -1){
 				cPontos[i] = 0;
 				lastDist = sqrt(pow((pontos[i][0] - centroides[0][0]), 2) + pow((pontos[i][1] - centroides[0][1]), 2));
+				
 			}else{
 				lastDist = sqrt(pow((pontos[i][0] - centroides[cPontos[i]][0]), 2) + pow((pontos[i][1] - centroides[cPontos[i]][1]), 2));
 			}
