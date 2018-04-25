@@ -7,6 +7,8 @@ main(int argc, int** argv) {
 	float pontos[][]; //matriz n x 2, onde n é o número de pontos no total
 	int cPontos[]; //indica o id do centroide "dono" do ponto
 	
+	preenche(pontos, cPontos);
+	
 	float total; // integral total
 	int source; // remetente da integral
 	int dest=0; // destino das integrais (nó 0)
@@ -39,5 +41,8 @@ tag, MPI_COMM_WORLD);
 		, total);
 		MPI_Finalize();
 	}
+}
+
+void preenche(float **a, int *b){ //aqui a gente enche o vetor de pontos
 }
 
