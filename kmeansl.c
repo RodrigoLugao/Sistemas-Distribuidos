@@ -4,12 +4,9 @@ main(int argc, int** argv) {
 	int my_rank;
 	int p; // número de processos
 	int c; // número de centróides
-	float pontos[][];
-	int n=1024; // número de trapezóides
-	float h; // base do trapezóide
-	float local_a, local_b; // intervalo local
-	int local_n; // número de trapezóides local
-	float integral; // integral no meu intervalo
+	float pontos[][]; //matriz n x 2, onde n é o número de pontos no total
+	int cPontos[]; //indica o id do centroide "dono" do ponto
+	
 	float total; // integral total
 	int source; // remetente da integral
 	int dest=0; // destino das integrais (nó 0)
