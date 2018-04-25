@@ -15,7 +15,7 @@ main(int argc, int* argv) {
 	double centroides[c][2];
 	double incrCX[c];
 	double incrCY[c];
-	int cAtual, pAtual;
+	int totalC;
 	preenche(pontos, cPontos);
 	sorteia(centroides);
 	
@@ -61,11 +61,11 @@ main(int argc, int* argv) {
 	while(1){ 	//loop principal. "condicao de parada" é nenhum centroide mudou de lugar
 
 		if(!primeiraVez){ // se não é a primeira vez, temos que receber os valores dos centroides atualizados
-			//for( j = 0; j < c; j++){
-			//	MPI_Recv(centroides[j][0], 1, MPI_DOUBLE, j, 1, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
-			//	MPI_Recv(centroides[j][1], 1, MPI_DOUBLE, j, 2, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
-			//}
-			MPI_Recv(&centroides, c*2, MPI_INT, 0, tag,MPI_COMM_WORLD, &status);
+			for( j = 0; j < c; j++){
+				MPI_Recv(centroides[j][0], 1, MPI_DOUBLE, j, 1, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
+				MPI_Recv(centroides[j][1], 1, MPI_DOUBLE, j, 2, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
+			}
+			//MPI_Recv(&centroides, c*2, MPI_INT, 0, tag,MPI_COMM_WORLD, &status);
 
 		}else primeiraVez = 0;
 		
