@@ -14,32 +14,32 @@ main(int argc, int** argv) {
 	int dest=0; // destino das integrais (nó 0)
 	int tag=200; // tipo de mensagem (único)
 	
-	
+	//Declarar todas as variaveis necessarias
 	
 	MPI_Status status;
 	
 	int local_n, float h);
-	MPI_Init(&argc, &argv);
+	MPI_Init(&argc, &argv); //Aqui os processos iniciam.
 	MPI_Comm_rank(MPI_COMM_WORLD, &my_rank);
 	MPI_Comm_size(MPI_COMM_WORLD, &p);
-	h = (b-a) / n;
-	local_n = n / p;
-	local_a = a + my_rank * local_n * h;
-	local_b = local_a + local_n * h;
-	if(my_rank == 0) {
-		total = integral;
-		for(source=1; source<p; source++) {
-			MPI_Recv(&integral, 1, MPI_FLOAT, source, tag,
-			MPI_COMM_WORLD, &status);
-			total +=integral;
+	while(!condicao de parada){ 	//loop principal. "condicao de parada" é nenhum centroide mudou de lugar
+		// primeiro passo = calcula os novos donos dos pontos que me pertencem
+
+		if(my_rank == 0) {
+			total = integral;
+			for(source=1; source<p; source++) {
+				MPI_Recv(&integral, 1, MPI_FLOAT, source, tag,
+				MPI_COMM_WORLD, &status);
+				total +=integral;
+			}
+		} else
+			MPI_Send(&integral, 1, MPI_FLOAT, dest,
+	tag, MPI_COMM_WORLD);
 		}
-	} else
-		MPI_Send(&integral, 1, MPI_FLOAT, dest,
-tag, MPI_COMM_WORLD);
-	}
-	if(my_rank == 0) printf("Resultado: %f\n"
-		, total);
-		MPI_Finalize();
+		if(my_rank == 0) printf("Resultado: %f\n"
+			, total);
+			MPI_Finalize();
+		}
 	}
 }
 
