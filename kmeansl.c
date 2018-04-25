@@ -3,6 +3,7 @@
 main(int argc, int** argv) {
 	int my_rank;
 	int p; // número de processos
+	int c; // número de centróides
 	float pontos[][];
 	int n=1024; // número de trapezóides
 	float h; // base do trapezóide
