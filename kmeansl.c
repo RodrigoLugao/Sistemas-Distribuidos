@@ -1,22 +1,37 @@
 #include <stdio.h>
 #include <mpi.h>
+#include <math.h>
 main(int argc, int* argv) {
 	int my_rank;
 	int p; // número de processos
 	int c; // número de centróides
 	int n; // número de pontos 
-	float pontos[][]; //matriz n x 2, onde n é o número de pontos no total
+	double pontos[n][2]; //matriz n x 2, onde n é o número de pontos no total
 	int cPontos[]; //indica o id do centroide "dono" do ponto
-	float centroides[c][2];
+	
+	int ind;
+	
+	double centroides[c][2];
+	double incrCX[c];
+	double incrCY[c];
 	
 	preenche(pontos, cPontos);
 	sorteia(centroides);
+	
+	for(ind = 0; ind < n; ind++){
+		cPontos[ind] = -1;
+	}
+	
+	for(ind = 0; ind < c; ind++){
+		incrCX[ind] = 0;
+		incrCY[ind] = 0;
+	}
 	
 	int h = n/(p-1); //quantos pontos cada processo vai tomar conta
 	int resto = n%p;
 	int meu_a, meu_b; // meu_a = primeiro ponto da minha sublista; meu_b = ultimo ponto
 	
-	float total; // integral total
+	double total; // integral total
 	int source; // remetente da integral
 	int dest=0; // destino das integrais (nó 0)
 	int tag=200; // tipo de mensagem (único)
@@ -31,13 +46,24 @@ main(int argc, int* argv) {
 	MPI_Comm_size(MPI_COMM_WORLD, &p);
 	
 	meu_a = h * my_rank; //calcula a posição do primeiro ponto que eu preciso tomar conta;
-	meu_b = meu_a + h -1; //calcula a posição do ultimo ponto que eu preciso tomar conta;
+	if(my_rank < p - 1){
+		meu_b = meu_a + h -1; //calcula a posição do ultimo ponto que eu preciso tomar conta;
+	}else{
+		meu_b = n - 1;
+	}
 	
+	double lastDist; 
+	int i, j;
 	while(!condicao de parada){ 	//loop principal. "condicao de parada" é nenhum centroide mudou de lugar
 		// primeiro passo = calcula os novos donos dos pontos que me pertencem
-		int i, j;
 		for( i = meu_a; i <= meu_b; i++){ //percorre os pontos de minha responsabilidade
-			for( j = 0; j < c; j++){ //percorre o vetor de centroides para ver qual é o mais próximo
+			if(cPontos[i] == -1){
+				cPontos[i] = 0;
+				lastDist = sqrt(pow((pontos[i][0] - centroides[0][0]), 2) + pow((pontos[i][1] - centroides[0][1]), 2));
+			}else{
+				lastDist = sqrt(pow((pontos[i][0] - centroides[cPontos[i]][0]), 2) + pow((pontos[i][1] - centroides[cPontos[i]][1]), 2));
+			}
+			for( j = 1; j < c; j++){ //percorre o vetor de centroides para ver qual é o mais próximo
 				
 			}
 		}
