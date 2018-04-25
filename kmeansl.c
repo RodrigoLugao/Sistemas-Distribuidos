@@ -52,10 +52,17 @@ main(int argc, int* argv) {
 		meu_b = n - 1;
 	}
 	
-	double lastDist; 
-	int i, j;
+	double lastDist, newDist; 
+	int i, j, newC, oldC;
 	while(!condicao de parada){ 	//loop principal. "condicao de parada" é nenhum centroide mudou de lugar
 		// primeiro passo = calcula os novos donos dos pontos que me pertencem
+		if(!primeiraVez){
+			for( j = 0; j < c; j++){
+				MPI_Recv(centroides[j][0], 1, MPI_DOUBLE, j, 1, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
+				MPI_Recv(centroides[j][1], 1, MPI_DOUBLE, j, 1, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
+			}
+		}else primeiraVez = 0;
+		
 		for( i = meu_a; i <= meu_b; i++){ //percorre os pontos de minha responsabilidade
 			if(cPontos[i] == -1){
 				cPontos[i] = 0;
@@ -64,8 +71,13 @@ main(int argc, int* argv) {
 			}else{
 				lastDist = sqrt(pow((pontos[i][0] - centroides[cPontos[i]][0]), 2) + pow((pontos[i][1] - centroides[cPontos[i]][1]), 2));
 			}
-			for( j = 1; j < c; j++){ //percorre o vetor de centroides para ver qual é o mais próximo
-				
+			oldC = cPontos[i];
+			for( j = 0; j < c; j++){ //percorre o vetor de centroides para ver qual é o mais próximo
+				newDist = sqrt(pow((pontos[i][0] - centroides[cPontos[i]][0]), 2) + pow((pontos[i][1] - centroides[cPontos[i]][1]), 2));
+				if(lastDist > newDist){
+					lastDist = newDist;
+					cPontos[i] = j;
+				}
 			}
 		}
 
