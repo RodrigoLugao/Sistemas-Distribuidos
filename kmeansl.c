@@ -35,8 +35,12 @@ main(int argc, int* argv) {
 	
 	while(!condicao de parada){ 	//loop principal. "condicao de parada" é nenhum centroide mudou de lugar
 		// primeiro passo = calcula os novos donos dos pontos que me pertencem
-		
-		me
+		int i, j;
+		for( i = meu_a; i <= meu_b; i++){ //percorre os pontos de minha responsabilidade
+			for( j = 0; j < c; j++){ //percorre o vetor de centroides para ver qual é o mais próximo
+				
+			}
+		}
 
 		if(my_rank == 0) {
 			total = integral;
