@@ -26,8 +26,11 @@ int main(int argc, char** argv) {
 	int *pontoCent = (int*) malloc(n * sizeof(int));
 	double **centroides = (double**) malloc(c * sizeof(double*));;
 	double *incrCX = (double*) malloc(c * sizeof(double));
+	double *incrCXAux = (double*) malloc(c * sizeof(double));
 	double *incrCY = (double*) malloc(c * sizeof(double));
+	double *incrCYAux = (double*) malloc(c * sizeof(double));
 	int *totalC = (int*) malloc(c * sizeof(int));;
+	int *totalCAux = (int*) malloc(c * sizeof(int));;
 	
 	for(ind = 0; ind < n; ind++){
 		pontos[ind] = (double*) malloc(2 * sizeof(double));
@@ -121,11 +124,15 @@ int main(int argc, char** argv) {
 				MPI_Send(&incrCY, c, MPI_DOUBLE, 0, 4, MPI_COMM_WORLD);
 				MPI_Send(&totalC, c, MPI_INT, 0, 5, MPI_COMM_WORLD);
 			}else{
-				for(i = 0; i < n; i++){
-					MPI_Recv(&incrCX, c, MPI_DOUBLE, i, 3, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
-					MPI_Recv(&incrCY, c, MPI_DOUBLE, i, 4, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
-					MPI_Recv(&totalC, c, MPI_INT, i, 5, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
-				}
+				//for(i = 0; i < n; i++){
+					//MPI_Recv(&incrCX, c, MPI_DOUBLE, i, 3, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
+					//MPI_Recv(&incrCY, c, MPI_DOUBLE, i, 4, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
+					//MPI_Recv(&totalC, c, MPI_INT, i, 5, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
+					MPI_Reduce(&incrCXAux, &incrCX, c, MPI_DOUBLE, MPI_SUM, 3, MPI_COMM_WORLD);
+					MPI_Reduce(&incrCYAux, &incrCY, c, MPI_DOUBLE, MPI_SUM, 4, MPI_COMM_WORLD);
+					MPI_Reduce(&totalCAux, &totalC, c, MPI_INT, MPI_SUM, 5, MPI_COMM_WORLD);
+
+				//}
 			}
 
 			if(my_rank ==0) {
