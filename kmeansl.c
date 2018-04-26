@@ -90,7 +90,7 @@ int main(int argc, char** argv) {
 	int parada = 0;
 	int primeiraVez = 1;
 	termino = 0;
-	while(!parada){ 	//loop principal. "condicao de parada" é nenhum centroide mudou de lugar
+	while(termino < 10){ 	//loop principal. "condicao de parada" é nenhum centroide mudou de lugar
 		parada = 1;
 		if(!primeiraVez){ // se não é a primeira vez, temos que receber os valores dos centroides atualizados
 			if(my_rank != 0){
@@ -141,6 +141,7 @@ int main(int argc, char** argv) {
 				parada = 0;
 			}
 		}
+		printf("oi");
 		
 		MPI_Reduce(&incrCY, &incrCYAux, c, MPI_DOUBLE, MPI_SUM, 0, MPI_COMM_WORLD);
 		MPI_Reduce(&incrCX, &incrCXAux, c, MPI_DOUBLE, MPI_SUM, 0, MPI_COMM_WORLD);
@@ -161,9 +162,9 @@ int main(int argc, char** argv) {
 			}
 		}
 		MPI_Barrier(MPI_COMM_WORLD);
+		termino++;
 	}
 		MPI_Finalize();
 
 }
-
 
