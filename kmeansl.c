@@ -90,7 +90,7 @@ int main(int argc, char** argv) {
 	int parada = 0;
 	int primeiraVez = 1;
 	termino = 0;
-	while(termino < 10){ 	//loop principal. "condicao de parada" é nenhum centroide mudou de lugar
+	while(!parada){ 	//loop principal. "condicao de parada" é nenhum centroide mudou de lugar
 		parada = 1;
 		if(!primeiraVez){ // se não é a primeira vez, temos que receber os valores dos centroides atualizados
 			if(my_rank != 0){
@@ -145,25 +145,25 @@ int main(int argc, char** argv) {
 		MPI_Reduce(&incrCY, &incrCYAux, c, MPI_DOUBLE, MPI_SUM, 0, MPI_COMM_WORLD);
 		MPI_Reduce(&incrCX, &incrCXAux, c, MPI_DOUBLE, MPI_SUM, 0, MPI_COMM_WORLD);
 		MPI_Reduce(&totalC, &totalCAux, c, MPI_INT, MPI_SUM, 0, MPI_COMM_WORLD);
-
-		changed = 0;
+		MPI_Reduce(&parada, &changed, 1, MPI_INT, MPI_PROD, 0, MPI_COMM_WORLD);
 		
-		if(my_rank == 0 && !parada) {
-			for(i = 0; i < c; i++){
-				if(totalCAux[i] != 0){
-					centroides[i][0] = incrCXAux[i]/totalCAux[i];
-					centroides[i][1] = incrCYAux[i]/totalCAux[i];
-					printf("centroide %d: %f, %f\n", i, centroides[i][0], centroides[i][1]);
+		if(my_rank == 0) {
+			if(!parada){
+				for(i = 0; i < c; i++){
+					if(totalCAux[i] != 0){
+						centroides[i][0] = incrCXAux[i]/totalCAux[i];
+						centroides[i][1] = incrCYAux[i]/totalCAux[i];
+						printf("centroide %d: %f, %f\n", i, centroides[i][0], centroides[i][1]);
+					}
 				}
+			}else{
+				 MPI_Bcast(&parada, 1, MPI_INT, 0, MPI_COMM_WORLD);
 			}
 		}
 		MPI_Barrier(MPI_COMM_WORLD);
-		termino ++;
 	}
 		MPI_Finalize();
 
 }
-
-
 
 
