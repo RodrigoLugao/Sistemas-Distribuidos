@@ -20,21 +20,21 @@ int main(int argc, char** argv) {
 	int p; // número de processos
 	int c = 4; // número de centróides
 	int n = 20; // número de pontos cPontos
-	double **pontos = (double**) malloc(n * sizeof(double*)); //matriz n x 2, onde n é o número de pontos no total
-	int *cPontos = (int*) malloc(n * sizeof(int)); //indica o id do centroide "dono" do ponto
+	double pontos[20][2]; //matriz n x 2, onde n é o número de pontos no total
+	int cPontos[20];
 	
 	int ind;
-	int *pontoCent = (int*) malloc(n * sizeof(int));
-	double **centroides = (double**) malloc(c * sizeof(double*));;
-	double *incrCX = (double*) malloc(c * sizeof(double));
-	double *incrCXAux = (double*) malloc(c * sizeof(double));
-	double *incrCY = (double*) malloc(c * sizeof(double));
-	double *incrCYAux = (double*) malloc(c * sizeof(double));
-	int *totalC = (int*) malloc(c * sizeof(int));;
-	int *totalCAux = (int*) malloc(c * sizeof(int));;
+	//int *pontoCent = (int*) malloc(n * sizeof(int));
+	double centroides[4][2];
+	double incrCX[4];
+	double incrCY[4];
+	int totalC[4];
+	double incrCXAux[4];
+	double incrCYAux[4];
+	int totalCAux[4];
+
 	
 	for(ind = 0; ind < n; ind++){
-		pontos[ind] = (double*) malloc(2 * sizeof(double));
 		cPontos[ind] = -1;
 	}
 	
@@ -42,7 +42,6 @@ int main(int argc, char** argv) {
 		incrCX[ind] = 0;
 		incrCY[ind] = 0;
 		totalC[ind] = 0;
-		centroides[ind] = (double*) malloc(2 * sizeof(double));
 	}
 	
 	for(ind = 0; ind < n; ind++){
@@ -86,12 +85,13 @@ int main(int argc, char** argv) {
 	}
 	
 	double lastDist, newDist; 
-	int i, j, newC, oldC;
+	int i, j, newC, oldC, termino;
 	int changed = 0;
 	int primeiraVez = 1;
-	
-	while(1){ 	//loop principal. "condicao de parada" é nenhum centroide mudou de lugar
-
+	printf("oi");
+	termino = 0;
+	while(termino < 10){ 	//loop principal. "condicao de parada" é nenhum centroide mudou de lugar
+		printf("oi");
 		if(!primeiraVez){ // se não é a primeira vez, temos que receber os valores dos centroides atualizados
 			if(my_rank != 0){
 				for( j = 0; j < c; j++){
@@ -140,9 +140,9 @@ int main(int argc, char** argv) {
 			}
 		}
 
-		MPI_Reduce(&incrCX, &incrCX, c, MPI_DOUBLE, MPI_SUM, 0, MPI_COMM_WORLD);
-		MPI_Reduce(&incrCY, &incrCY, c, MPI_DOUBLE, MPI_SUM, 0, MPI_COMM_WORLD);
-		MPI_Reduce(&totalC, &totalC, c, MPI_INT, MPI_SUM, 0, MPI_COMM_WORLD);
+		MPI_Reduce(&incrCY, &incrCYAux, c, MPI_DOUBLE, MPI_SUM, 0, MPI_COMM_WORLD);
+		MPI_Reduce(&incrCX, &incrCXAux, c, MPI_DOUBLE, MPI_SUM, 0, MPI_COMM_WORLD);
+		MPI_Reduce(&totalC, &totalCAux, c, MPI_INT, MPI_SUM, 0, MPI_COMM_WORLD);
 
 		changed = 0;
 		
@@ -150,10 +150,11 @@ int main(int argc, char** argv) {
 			for(i = 0; i < c; i++){
 				centroides[i][0] = incrCX[i]/totalC[i];
 				centroides[i][1] = incrCY[i]/totalC[i];
-				printf("%d", centroides[i][1]);
+				printf("centroide: %d\n", centroides[i][1]);
 			}
 		}
 		MPI_Barrier(MPI_COMM_WORLD);
+		termino ++;
 	}
 		MPI_Finalize();
 
