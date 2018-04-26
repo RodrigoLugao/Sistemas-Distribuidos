@@ -7,27 +7,30 @@ main(int argc, int* argv) {
 	int p; // número de processos
 	int c; // número de centróides
 	int n; // número de pontos cPontos
-	double pontos[n][2]; //matriz n x 2, onde n é o número de pontos no total
-	int cPontos[n]; //indica o id do centroide "dono" do ponto
+	double **pontos = (double**) malloc(n * sizeof(double*)); //matriz n x 2, onde n é o número de pontos no total
+	int *cPontos = (int*) malloc(n * sizeof(int)); //indica o id do centroide "dono" do ponto
 	
 	int ind;
 	int pontoCent[n][2];
-	double centroides[c][2];
-	double incrCX[c];
-	double incrCY[c];
-	int totalC;
-	preenche(pontos, cPontos);
-	sorteia(centroides);
+	double **centroides = (double**) malloc(c * sizeof(double*));;
+	double *incrCX = (double*) malloc(c * sizeof(double));
+	double *incrCY = (double*) malloc(c * sizeof(double));
+	int *totalC = (int*) malloc(c * sizeof(int));;
 	
 	for(ind = 0; ind < n; ind++){
-		cPontos[ind] = ind;
+		pontos[ind] = (double*) malloc(2 * sizeof(double));
 		cPontos[ind] = -1;
 	}
 	
 	for(ind = 0; ind < c; ind++){
 		incrCX[ind] = 0;
 		incrCY[ind] = 0;
+		totalC[ind] = 0;
+		centroides[ind] = (double*) malloc(2 * sizeof(double));
 	}
+	
+	preenche(pontos, cPontos);
+	sorteia(centroides);
 	
 	int h = n/(p-1); //quantos pontos cada processo vai tomar conta
 	int resto = n%p;
