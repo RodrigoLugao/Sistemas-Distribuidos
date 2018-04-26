@@ -19,13 +19,13 @@ int main(int argc, char** argv) {
 	int my_rank;
 	int p; // número de processos
 	int c = 4; // número de centróides
-	int n = 20; // número de pontos cPontos
-	double pontos[20][2]; //matriz n x 2, onde n é o número de pontos no total
-	int cPontos[20];
+	int n = 9; // número de pontos cPontos
+	double pontos[9][2] = {{0,0},{1,1},{2,2},{3,3},{4,4},{5,5},{6,6},{7,7}, {8,8}}; //matriz n x 2, onde n é o número de pontos no total
+	int cPontos[9];
 	
 	int ind;
 	//int *pontoCent = (int*) malloc(n * sizeof(int));
-	double centroides[4][2];
+	double centroides[4][2] = {{0,0}, {10,10},{2,2},{4,4}};
 	double incrCX[4];
 	double incrCY[4];
 	int totalC[4];
@@ -44,15 +44,15 @@ int main(int argc, char** argv) {
 		totalC[ind] = 0;
 	}
 	
-	for(ind = 0; ind < n; ind++){
-		pontos[ind][0] = ind;
-		pontos[ind][1] = ind;
-	}
+	//for(ind = 0; ind < n; ind++){
+	//	pontos[ind][0] = ind;
+	//	pontos[ind][1] = ind;
+	//}
 	
-	for(ind = 0; ind < c; ind++){
-		centroides[ind][0] = ind;
-		centroides[ind][1] = ind;
-	}
+	//for(ind = 0; ind < c; ind++){
+	//	centroides[ind][0] = ind;
+	//	centroides[ind][1] = ind;
+	//}
 	
 	//preenche(pontos, cPontos);
 	//sorteia(centroides);
@@ -90,7 +90,7 @@ int main(int argc, char** argv) {
 	int parada = 0;
 	int primeiraVez = 1;
 	termino = 0;
-	while(termino < 10){ 	//loop principal. "condicao de parada" é nenhum centroide mudou de lugar
+	while(!parada){ 	//loop principal. "condicao de parada" é nenhum centroide mudou de lugar
 		parada = 1;
 		if(!primeiraVez){ // se não é a primeira vez, temos que receber os valores dos centroides atualizados
 			if(my_rank != 0){
@@ -131,23 +131,26 @@ int main(int argc, char** argv) {
 					lastDist = newDist;
 					newC = j;
 					changed = 1;
-					cPontos[i]=newC;
+					
 				}
 			}
 			if(changed){
+				printf("ponto %d do cluster %d para o cluster %d\n", i, cPontos[i], newC);
+				cPontos[i] = newC;
 				incrCX[newC] = incrCX[newC] + pontos[i][0];
 				incrCY[newC] = incrCY[newC] + pontos[i][1];
 				totalC[newC] ++;
 				parada = 0;
+				
 			}
 		}
-		printf("oi");
+		printf("oi eu sou o %d\n", my_rank);
 		
 		MPI_Reduce(&incrCY, &incrCYAux, c, MPI_DOUBLE, MPI_SUM, 0, MPI_COMM_WORLD);
 		MPI_Reduce(&incrCX, &incrCXAux, c, MPI_DOUBLE, MPI_SUM, 0, MPI_COMM_WORLD);
 		MPI_Reduce(&totalC, &totalCAux, c, MPI_INT, MPI_SUM, 0, MPI_COMM_WORLD);
 		MPI_Reduce(&parada, &changed, 1, MPI_INT, MPI_PROD, 0, MPI_COMM_WORLD);
-		
+		parada = changed;
 		if(my_rank == 0) {
 			if(!parada){
 				for(i = 0; i < c; i++){
@@ -156,15 +159,33 @@ int main(int argc, char** argv) {
 						centroides[i][1] = incrCYAux[i]/totalCAux[i];
 						printf("centroide %d: %f, %f\n", i, centroides[i][0], centroides[i][1]);
 					}
-				}
-			}else{
-				 MPI_Bcast(&parada, 1, MPI_INT, 0, MPI_COMM_WORLD);
+				} 
 			}
 		}
+		MPI_Bcast(&parada, 1, MPI_INT, 0, MPI_COMM_WORLD);
 		MPI_Barrier(MPI_COMM_WORLD);
-		termino++;
+		//termino++;
 	}
-		MPI_Finalize();
+	if(my_rank !=0){
+		for( i = meu_a; i <= meu_b; i++){
+			MPI_Send(&pontos[i][0], 1, MPI_DOUBLE, 0, 1, MPI_COMM_WORLD);
+			MPI_Send(&pontos[i][1], 1, MPI_DOUBLE, 0, 2, MPI_COMM_WORLD);
+			MPI_Send(&cPontos[i], 1, MPI_INT, 0, 3, MPI_COMM_WORLD);
+		}
+	}else{
+		for( i = 3; i < n; i++){
+			MPI_Recv(&pontos[i][0], 1, MPI_DOUBLE, MPI_ANY_SOURCE, 1, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
+			MPI_Recv(&pontos[i][1], 1, MPI_DOUBLE, MPI_ANY_SOURCE, 2, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
+			MPI_Recv(&cPontos[i], 1, MPI_INT, MPI_ANY_SOURCE, 3, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
+		}
+		for( i = 0; i < n; i++){
+			printf("Ponto %d = (%f,%f) pertence ao cluster %d\n", i, pontos[i][0], pontos[i][1], cPontos[i]);
+		}
+		for(i = 0; i < c; i++){
+			printf("O cluster %d tem como centroide o ponto (%f,%f)\n", i, centroides[i][0], centroides[i][1]);
+		}
+	}
+	MPI_Finalize();
 
 }
 
