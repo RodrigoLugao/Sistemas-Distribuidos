@@ -78,8 +78,10 @@ int main(int argc, char** argv) {
 
 		if(!primeiraVez){ // se não é a primeira vez, temos que receber os valores dos centroides atualizados
 			for( j = 0; j < c; j++){
-				MPI_Recv(&centroides[j][0], 1, MPI_DOUBLE, j, 1, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
-				MPI_Recv(&centroides[j][1], 1, MPI_DOUBLE, j, 2, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
+				if(j != my-rank){
+					MPI_Recv(&centroides[j][0], 1, MPI_DOUBLE, j, 1, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
+					MPI_Recv(&centroides[j][1], 1, MPI_DOUBLE, j, 2, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
+				}
 			}
 			//MPI_Recv(&centroides, c*2, MPI_INT, 0, tag,MPI_COMM_WORLD, &status);
 
