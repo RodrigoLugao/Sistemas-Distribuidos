@@ -47,6 +47,7 @@ int main(int argc, char** argv) {
 	for(ind = 0; ind < n; ind++){
 		pontos[ind][0] = ind;
 		pontos[ind][1] = ind;
+		printf("ind-esimo ponto = (%f,%f)", pontos[ind][0],  pontos[ind][0]);
 	}
 	
 	for(ind = 0; ind < c; ind++){
@@ -88,7 +89,7 @@ int main(int argc, char** argv) {
 	int i, j, newC, oldC, termino;
 	int changed = 0;
 	int primeiraVez = 1;
-	printf("oi");
+	printf("ind-esimo ponto = (%f,%f)", pontos[3][0],  pontos[3][0]);
 	termino = 0;
 	while(termino < 10){ 	//loop principal. "condicao de parada" é nenhum centroide mudou de lugar
 		printf("oi");
@@ -117,6 +118,7 @@ int main(int argc, char** argv) {
 		}
 		
 		for( i = meu_a; i <= meu_b; i++){ //percorre os pontos de minha responsabilidade
+			changed = 0;
 			if(cPontos[i] == -1){
 				lastDist = 100000; //->infinito
 				oldC = -1;
@@ -131,12 +133,14 @@ int main(int argc, char** argv) {
 					newC = j;
 					changed = 1;
 					cPontos[i]=newC;
+					printf("processo %d eh maior\n", my_rank);
 				}
 			}
 			if(changed){
-				incrCX[newC] += pontos[i][0];
-				incrCX[newC] += pontos[i][1];
-				totalC[newC] ++;				
+				incrCX[newC] = incrCX[newC] + pontos[i][0];
+				incrCY[newC] = incrCY[newC] + pontos[i][1];
+				totalC[newC] ++;
+				printf("processo %d, %f %f %d\n", my_rank, incrCX[newC], incrCX[newC], totalC[newC]);
 			}
 		}
 
@@ -148,9 +152,9 @@ int main(int argc, char** argv) {
 		
 		if(my_rank == 0) {
 			for(i = 0; i < c; i++){
-				centroides[i][0] = incrCX[i]/totalC[i];
-				centroides[i][1] = incrCY[i]/totalC[i];
-				printf("centroide: %d\n", centroides[i][1]);
+				centroides[i][0] = incrCXAux[i]/totalCAux[i];
+				centroides[i][1] = incrCYAux[i]/totalCAux[i];
+				printf("centroide: %f\n", centroides[i][1]);
 			}
 		}
 		MPI_Barrier(MPI_COMM_WORLD);
@@ -159,4 +163,5 @@ int main(int argc, char** argv) {
 		MPI_Finalize();
 
 }
+
 
