@@ -47,7 +47,6 @@ int main(int argc, char** argv) {
 	for(ind = 0; ind < n; ind++){
 		pontos[ind][0] = ind;
 		pontos[ind][1] = ind;
-		printf("%d-esimo ponto = (%f,%f)\n", ind, pontos[ind][0],  pontos[ind][0]);
 	}
 	
 	for(ind = 0; ind < c; ind++){
@@ -88,20 +87,17 @@ int main(int argc, char** argv) {
 	double lastDist, newDist; 
 	int i, j, newC, oldC, termino;
 	int changed = 0;
+	int parada = 0;
 	int primeiraVez = 1;
-	printf("ind-esimo ponto = (%f,%f)", pontos[3][0],  pontos[3][0]);
-	termino = 1;
-	while(termino){ 	//loop principal. "condicao de parada" é nenhum centroide mudou de lugar
-		printf("oi");
+	termino = 0;
+	while(termino < 10){ 	//loop principal. "condicao de parada" é nenhum centroide mudou de lugar
+		parada = 1;
 		if(!primeiraVez){ // se não é a primeira vez, temos que receber os valores dos centroides atualizados
 			if(my_rank != 0){
 				for( j = 0; j < c; j++){
 					MPI_Recv(&centroides[j][0], 1, MPI_DOUBLE, 0, 1, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
 					MPI_Recv(&centroides[j][1], 1, MPI_DOUBLE, 0, 2, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
 				}
-				
-				MPI_Recv(&termino, 1, MPI_INT, 0, 6, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
-					printf("Recebi a condicao de termino: %d",termino);
 			}else{
 				for(i = 1; i < p; i++){
 					for( j = 0; j < c; j++){
@@ -136,55 +132,38 @@ int main(int argc, char** argv) {
 					newC = j;
 					changed = 1;
 					cPontos[i]=newC;
-					printf("processo %d eh maior\n", my_rank);
 				}
 			}
 			if(changed){
 				incrCX[newC] = incrCX[newC] + pontos[i][0];
 				incrCY[newC] = incrCY[newC] + pontos[i][1];
 				totalC[newC] ++;
-				printf("processo %d, newC %d, incrCX %f %f %d\n", my_rank, newC, incrCX[newC], incrCY[newC], totalC[newC]);
+				parada = 0;
 			}
-		}
-
-		for( j = 0; j < c; j++){ 
-			printf("valores dos vetores: inCX = %f inCY = %f total = %d\n", incrCX[j], incrCY[newC], totalC[newC]);
 		}
 		
 		MPI_Reduce(&incrCY, &incrCYAux, c, MPI_DOUBLE, MPI_SUM, 0, MPI_COMM_WORLD);
 		MPI_Reduce(&incrCX, &incrCXAux, c, MPI_DOUBLE, MPI_SUM, 0, MPI_COMM_WORLD);
 		MPI_Reduce(&totalC, &totalCAux, c, MPI_INT, MPI_SUM, 0, MPI_COMM_WORLD);
 
-		for( j = 0; j < c; j++){ 
-			printf("valores dos vetores: inCX = %f inCY = %f total = %d\n", incrCXAux[j], incrCYAux[newC], totalCAux[newC]);
-		}
-		
 		changed = 0;
 		
-		
-		
-		if(my_rank == 0) {
-			termino=0;
+		if(my_rank == 0 && !parada) {
 			for(i = 0; i < c; i++){
-				if(centroides[i][0] != incrCXAux[i]/totalCAux[i] ||  centroides[i][1] != incrCYAux[i]/totalCAux[i]) {
-					termino=1;
+				if(totalCAux[i] != 0){
+					centroides[i][0] = incrCXAux[i]/totalCAux[i];
+					centroides[i][1] = incrCYAux[i]/totalCAux[i];
+					printf("centroide %d: %f, %f\n", i, centroides[i][0], centroides[i][1]);
 				}
-				   centroides[i][0] = incrCXAux[i]/totalCAux[i];
-				centroides[i][1] = incrCYAux[i]/totalCAux[i];
-				printf("centroide: %f\n", centroides[i][1]);
-				
 			}
-			for(i = 1; i < p; i++){
-					
-					MPI_Send(&termino, 1, MPI_INT, i, 6, MPI_COMM_WORLD);
-					
-				}
 		}
 		MPI_Barrier(MPI_COMM_WORLD);
-		//termino ++;
+		termino ++;
 	}
 		MPI_Finalize();
 
 }
+
+
 
 
