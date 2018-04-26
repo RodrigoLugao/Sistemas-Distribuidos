@@ -80,15 +80,22 @@ int main(int argc, char** argv) {
 	while(1){ 	//loop principal. "condicao de parada" é nenhum centroide mudou de lugar
 
 		if(!primeiraVez){ // se não é a primeira vez, temos que receber os valores dos centroides atualizados
-			for( j = 0; j < c; j++){
-				if(j != my_rank){
-					MPI_Recv(&centroides[j][0], 1, MPI_DOUBLE, j, 1, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
-					MPI_Recv(&centroides[j][1], 1, MPI_DOUBLE, j, 2, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
+			if(my_rank != 0){
+				for( j = 0; j < c; j++){
+					MPI_Recv(&centroides[j][0], 1, MPI_DOUBLE, 0, 1, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
+					MPI_Recv(&centroides[j][1], 1, MPI_DOUBLE, 0, 2, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
+				}
+			}else{
+				for(i = 1; i < p; i++){
+					for( j = 0; j < c; j++){
+						MPI_Send(&centroides[j][0], 1, MPI_DOUBLE, i, 1, MPI_COMM_WORLD);
+						MPI_Send(&centroides[j][1], 1, MPI_DOUBLE, i, 2, MPI_COMM_WORLD);
+					}
 				}
 			}
-			//MPI_Recv(&centroides, c*2, MPI_INT, 0, tag,MPI_COMM_WORLD, &status);
-
 		}else primeiraVez = 0;
+		
+		MPI_Barrier(MPI_COMM_WORLD);
 		
 		for(ind = 0; ind < c; ind++){
 			incrCX[ind] = 0;
@@ -119,64 +126,23 @@ int main(int argc, char** argv) {
 				totalC[newC] ++;				
 			}
 		}
-			if(my_rank>0){
-				MPI_Send(&incrCX, c, MPI_DOUBLE, 0, 3, MPI_COMM_WORLD);
-				MPI_Send(&incrCY, c, MPI_DOUBLE, 0, 4, MPI_COMM_WORLD);
-				MPI_Send(&totalC, c, MPI_INT, 0, 5, MPI_COMM_WORLD);
-			}else{
-				//for(i = 0; i < n; i++){
-					//MPI_Recv(&incrCX, c, MPI_DOUBLE, i, 3, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
-					//MPI_Recv(&incrCY, c, MPI_DOUBLE, i, 4, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
-					//MPI_Recv(&totalC, c, MPI_INT, i, 5, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
-					MPI_Reduce(&incrCXAux, &incrCX, c, MPI_DOUBLE, MPI_SUM, 3, MPI_COMM_WORLD);
-					MPI_Reduce(&incrCYAux, &incrCY, c, MPI_DOUBLE, MPI_SUM, 4, MPI_COMM_WORLD);
-					MPI_Reduce(&totalCAux, &totalC, c, MPI_INT, MPI_SUM, 5, MPI_COMM_WORLD);
 
-				//}
-			}
+		MPI_Reduce(&incrCX, &incrCX, c, MPI_DOUBLE, MPI_SUM, 0, MPI_COMM_WORLD);
+		MPI_Reduce(&incrCY, &incrCY, c, MPI_DOUBLE, MPI_SUM, 0, MPI_COMM_WORLD);
+		MPI_Reduce(&totalC, &totalC, c, MPI_INT, MPI_SUM, 0, MPI_COMM_WORLD);
 
-			if(my_rank ==0) {
-				changed=0;
-				for(source=1; source<p; source++) {
-				
-				MPI_Recv(&pontoCent, 2, MPI_INT, source, tag,MPI_COMM_WORLD, &status);
-				meu_a = h * source; //calcula a posição do primeiro ponto que o processo estava cuidando;
-
-				if(source < p - 1){
-					meu_b = meu_a + h -1; //calcula a posição do ultimo ponto que o processo estava cuidando;
-				}else{
-					meu_b = n - 1;
-				}
-				//atualiza a lista de centroides de cada ponto
-				for(i=0;i<meu_b; i++) {
-					if(cPontos[i]!=pontoCent[i]){
-						cPontos[i]=pontoCent[i];
-						changed=1;
-					}
-				}
-				
-			}
-				
-				//se houve mudança de centroide, recalcula os centroides
-				if(changed){
-					if(atualiza(centroides, cPontos, pontos)){
-						for(source=1; source<p; source++) {
-							MPI_Send(&centroides, 2*c, MPI_INT, source, tag, MPI_COMM_WORLD);
-						}
-			
-					}else{
-						for(source=1; source<p; source++) {
-							MPI_Send(&centroides, 2*c, MPI_INT, source, tag, MPI_COMM_WORLD);
-						}
-					}
-				}
-		}
-		if(my_rank == 0) printf("Resultado: %f\n"			, total);
-			
+		changed = 0;
 		
+		if(my_rank == 0) {
+			for(i = 0; i < c; i++){
+				centroides[i][0] = incrCX[i]/totalC[i];
+				centroides[i][1] = incrCY[i]/totalC[i];
+				printf("%d", centroides[i][1]);
+			}
+		}
+		MPI_Barrier(MPI_COMM_WORLD);
 	}
 		MPI_Finalize();
 
 }
-
 
