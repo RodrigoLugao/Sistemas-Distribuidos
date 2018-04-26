@@ -90,8 +90,8 @@ int main(int argc, char** argv) {
 	int changed = 0;
 	int primeiraVez = 1;
 	printf("ind-esimo ponto = (%f,%f)", pontos[3][0],  pontos[3][0]);
-	termino = 0;
-	while(termino < 10){ 	//loop principal. "condicao de parada" é nenhum centroide mudou de lugar
+	termino = 1;
+	while(termino){ 	//loop principal. "condicao de parada" é nenhum centroide mudou de lugar
 		printf("oi");
 		if(!primeiraVez){ // se não é a primeira vez, temos que receber os valores dos centroides atualizados
 			if(my_rank != 0){
@@ -99,6 +99,9 @@ int main(int argc, char** argv) {
 					MPI_Recv(&centroides[j][0], 1, MPI_DOUBLE, 0, 1, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
 					MPI_Recv(&centroides[j][1], 1, MPI_DOUBLE, 0, 2, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
 				}
+				
+				MPI_Recv(&termino, 1, MPI_INT, 0, 6, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
+					printf("Recebi a condicao de termino: %d",termino);
 			}else{
 				for(i = 1; i < p; i++){
 					for( j = 0; j < c; j++){
@@ -158,12 +161,24 @@ int main(int argc, char** argv) {
 		
 		changed = 0;
 		
+		
+		
 		if(my_rank == 0) {
+			termino=0;
 			for(i = 0; i < c; i++){
-				centroides[i][0] = incrCXAux[i]/totalCAux[i];
+				if(centroides[i][0] != incrCXAux[i]/totalCAux[i] ||  centroides[i][1] != incrCYAux[i]/totalCAux[i]) {
+					termino=1;
+				}
+				   centroides[i][0] = incrCXAux[i]/totalCAux[i];
 				centroides[i][1] = incrCYAux[i]/totalCAux[i];
 				printf("centroide: %f\n", centroides[i][1]);
+				
 			}
+			for(i = 1; i < p; i++){
+					
+					MPI_Send(&termino, 1, MPI_INT, i, 6, MPI_COMM_WORLD);
+					
+				}
 		}
 		MPI_Barrier(MPI_COMM_WORLD);
 		termino ++;
