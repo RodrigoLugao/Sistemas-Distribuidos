@@ -1,8 +1,20 @@
 #include <stdio.h>
+#include <stdlib.h>
 #include <mpi.h>
 #include <math.h>
-#include <limits.h>
-main(int argc, int* argv) {
+
+
+void preenche(double **a, int *b){ //aqui a gente enche o vetor de pontos
+}
+void sorteia(double **cs){ //aqui a gente sorteia 
+}
+
+
+int atualiza(double **cs,int *cPts, double **pts){ //aqui a gente atualiza os centroides
+	
+}
+
+int main(int argc, char** argv) {
 	int my_rank;
 	int p; // número de processos
 	int c; // número de centróides
@@ -65,8 +77,8 @@ main(int argc, int* argv) {
 
 		if(!primeiraVez){ // se não é a primeira vez, temos que receber os valores dos centroides atualizados
 			for( j = 0; j < c; j++){
-				MPI_Recv(centroides[j][0], 1, MPI_DOUBLE, j, 1, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
-				MPI_Recv(centroides[j][1], 1, MPI_DOUBLE, j, 2, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
+				MPI_Recv(&centroides[j][0], 1, MPI_DOUBLE, j, 1, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
+				MPI_Recv(&centroides[j][1], 1, MPI_DOUBLE, j, 2, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
 			}
 			//MPI_Recv(&centroides, c*2, MPI_INT, 0, tag,MPI_COMM_WORLD, &status);
 
@@ -74,10 +86,10 @@ main(int argc, int* argv) {
 		
 		for( i = meu_a; i <= meu_b; i++){ //percorre os pontos de minha responsabilidade
 			if(cPontos[i] == -1){
-				lastDist = 100000 //->infinito
+				lastDist = 100000; //->infinito
 				oldC = -1;
 			}else{
-				lastDist = sqrt(pow((pontos[i][0] - centroides[cPontos[i]][0]), 2) + pow((pontos[i][1][1] - centroides[cPontos[i]][1]), 2));
+				lastDist = sqrt(pow((pontos[i][0] - centroides[cPontos[i]][0]), 2) + pow((pontos[i][1] - centroides[cPontos[i]][1]), 2));
 				oldC = cPontos[i];
 			}
 			for( j = 0; j < c; j++){ //percorre o vetor de centroides para ver qual é o mais próximo
@@ -119,7 +131,7 @@ main(int argc, int* argv) {
 				
 				//se houve mudança de centroide, recalcula os centroides
 				if(changed){
-					if(atualiza(&centroides, &cPontos, &pontos)){
+					if(atualiza(centroides, cPontos, pontos)){
 						for(source=1; source<p; source++) {
 							MPI_Send(&centroides, 2*c, MPI_INT, source, tag, MPI_COMM_WORLD);
 						}
@@ -139,13 +151,4 @@ main(int argc, int* argv) {
 
 }
 
-void preenche(float **a, int *b){ //aqui a gente enche o vetor de pontos
-}
-void sorteia(float *cs){ //aqui a gente sorteia 
-}
-
-
-int atualiza(float *cs,int *cPts, double *pts){ //aqui a gente atualiza os centroides
-	
-}
 
