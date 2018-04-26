@@ -47,12 +47,12 @@ int main(int argc, char** argv) {
 	for(ind = 0; ind < n; ind++){
 		pontos[ind][0] = ind;
 		pontos[ind][1] = ind;
-		printf("ind-esimo ponto = (%f,%f)", pontos[ind][0],  pontos[ind][0]);
+		printf("%d-esimo ponto = (%f,%f)\n", ind, pontos[ind][0],  pontos[ind][0]);
 	}
 	
 	for(ind = 0; ind < c; ind++){
-		centroides[ind][0] = ind/(1+ind);
-		centroides[ind][1] = ind/(1+ind);
+		centroides[ind][0] = ind;
+		centroides[ind][1] = ind;
 	}
 	
 	//preenche(pontos, cPontos);
@@ -127,7 +127,7 @@ int main(int argc, char** argv) {
 				oldC = cPontos[i];
 			}
 			for( j = 0; j < c; j++){ //percorre o vetor de centroides para ver qual é o mais próximo
-				newDist = sqrt(pow((pontos[i][0] - centroides[cPontos[i]][0]), 2) + pow((pontos[i][1] - centroides[cPontos[i]][1]), 2));
+				newDist = sqrt(pow((pontos[i][0] - centroides[j][0]), 2) + pow((pontos[i][1] - centroides[j][1]), 2));
 				if(lastDist > newDist){
 					lastDist = newDist;
 					newC = j;
@@ -140,14 +140,22 @@ int main(int argc, char** argv) {
 				incrCX[newC] = incrCX[newC] + pontos[i][0];
 				incrCY[newC] = incrCY[newC] + pontos[i][1];
 				totalC[newC] ++;
-				printf("processo %d, %f %f %d\n", my_rank, incrCX[newC], incrCX[newC], totalC[newC]);
+				printf("processo %d, newC %d, incrCX %f %f %d\n", my_rank, newC, incrCX[newC], incrCY[newC], totalC[newC]);
 			}
 		}
 
+		for( j = 0; j < c; j++){ 
+			printf("valores dos vetores: inCX = %f inCY = %f total = %d\n", incrCX[j], incrCY[newC], totalC[newC]);
+		}
+		
 		MPI_Reduce(&incrCY, &incrCYAux, c, MPI_DOUBLE, MPI_SUM, 0, MPI_COMM_WORLD);
 		MPI_Reduce(&incrCX, &incrCXAux, c, MPI_DOUBLE, MPI_SUM, 0, MPI_COMM_WORLD);
 		MPI_Reduce(&totalC, &totalCAux, c, MPI_INT, MPI_SUM, 0, MPI_COMM_WORLD);
 
+		for( j = 0; j < c; j++){ 
+			printf("valores dos vetores: inCX = %f inCY = %f total = %d\n", incrCXAux[j], incrCYAux[newC], totalCAux[newC]);
+		}
+		
 		changed = 0;
 		
 		if(my_rank == 0) {
