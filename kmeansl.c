@@ -5,6 +5,7 @@
 
 
 void preenche(double **a, int *b){ //aqui a gente enche o vetor de pontos
+
 }
 void sorteia(double **cs){ //aqui a gente sorteia 
 }
@@ -17,8 +18,8 @@ int atualiza(double **cs,int *cPts, double **pts){ //aqui a gente atualiza os ce
 int main(int argc, char** argv) {
 	int my_rank;
 	int p; // número de processos
-	int c; // número de centróides
-	int n; // número de pontos cPontos
+	int c = 4; // número de centróides
+	int n = 20; // número de pontos cPontos
 	double **pontos = (double**) malloc(n * sizeof(double*)); //matriz n x 2, onde n é o número de pontos no total
 	int *cPontos = (int*) malloc(n * sizeof(int)); //indica o id do centroide "dono" do ponto
 	
@@ -44,12 +45,20 @@ int main(int argc, char** argv) {
 		centroides[ind] = (double*) malloc(2 * sizeof(double));
 	}
 	
-	preenche(pontos, cPontos);
-	sorteia(centroides);
+	for(ind = 0; ind < n; ind++){
+		pontos[ind][0] = ind;
+		pontos[ind][1] = ind;
+	}
 	
-	int h = n/(p-1); //quantos pontos cada processo vai tomar conta
-	int resto = n%p;
-	int meu_a, meu_b; // meu_a = primeiro ponto da minha sublista; meu_b = ultimo ponto
+	for(ind = 0; ind < c; ind++){
+		centroides[ind][0] = ind/(1+ind);
+		centroides[ind][1] = ind/(1+ind);
+	}
+	
+	//preenche(pontos, cPontos);
+	//sorteia(centroides);
+	
+	
 	
 	
 	double total; // integral total
@@ -64,6 +73,10 @@ int main(int argc, char** argv) {
 	MPI_Init(&argc, &argv); //Aqui os processos iniciam.
 	MPI_Comm_rank(MPI_COMM_WORLD, &my_rank);
 	MPI_Comm_size(MPI_COMM_WORLD, &p);
+	
+	int h = n/(p-1); //quantos pontos cada processo vai tomar conta
+	int resto = n%p;
+	int meu_a, meu_b; // meu_a = primeiro ponto da minha sublista; meu_b = ultimo ponto
 	
 	meu_a = h * my_rank; //calcula a posição do primeiro ponto que eu preciso tomar conta;
 	if(my_rank < p - 1){
