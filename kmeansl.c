@@ -102,7 +102,17 @@ int main(int argc, char** argv) {
 					cPontos[i]=newC;
 				}
 			}
+			if(changed){
+				incrCX[newC] += pontos[i][0];
+				incrCX[newC] += pontos[i][1];
+				totalC[newC] ++;
+				incrCX[oldC] -= pontos[i][0];
+				incrCX[oldC] -= pontos[i][1];
+				totalC[oldC] --;
+				
+			}
 		}
+		
 		
 			if(changed && my_rank>0){
 				MPI_Send(&cPontos, n, MPI_INT, 0, tag, MPI_COMM_WORLD);
