@@ -23,7 +23,7 @@ int main(int argc, char** argv) {
 	int *cPontos = (int*) malloc(n * sizeof(int)); //indica o id do centroide "dono" do ponto
 	
 	int ind;
-	int pontoCent[n][2];
+	int *pontoCent = (int*) malloc(n * sizeof(int));
 	double **centroides = (double**) malloc(c * sizeof(double*));;
 	double *incrCX = (double*) malloc(c * sizeof(double));
 	double *incrCY = (double*) malloc(c * sizeof(double));
