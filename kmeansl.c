@@ -72,6 +72,7 @@ int main(int argc, char** argv) {
 	double lastDist, newDist; 
 	int i, j, newC, oldC;
 	int changed = 0;
+	int primeiraVez = 1;
 	
 	while(1){ 	//loop principal. "condicao de parada" é nenhum centroide mudou de lugar
 
