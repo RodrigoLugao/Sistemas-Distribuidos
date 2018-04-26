@@ -120,9 +120,9 @@ int main(int argc, char** argv) {
 					meu_b = n - 1;
 				}
 				//atualiza a lista de centroides de cada ponto
-				for(k=0;k<meu_b; k++) {
-					if(cPontos[k]!=pontoCent[k]){
-						cPontos[k]=pontoCent[k];
+				for(i=0;i<meu_b; i++) {
+					if(cPontos[i]!=pontoCent[i]){
+						cPontos[i]=pontoCent[i];
 						changed=1;
 					}
 				}
