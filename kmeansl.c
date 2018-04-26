@@ -87,6 +87,12 @@ int main(int argc, char** argv) {
 
 		}else primeiraVez = 0;
 		
+		for(ind = 0; ind < c; ind++){
+			incrCX[ind] = 0;
+			incrCY[ind] = 0;
+			totalC[ind] = 0;
+		}
+		
 		for( i = meu_a; i <= meu_b; i++){ //percorre os pontos de minha responsabilidade
 			if(cPontos[i] == -1){
 				lastDist = 100000; //->infinito
@@ -107,17 +113,19 @@ int main(int argc, char** argv) {
 			if(changed){
 				incrCX[newC] += pontos[i][0];
 				incrCX[newC] += pontos[i][1];
-				totalC[newC] ++;
-				incrCX[oldC] -= pontos[i][0];
-				incrCX[oldC] -= pontos[i][1];
-				totalC[oldC] --;
-				
+				totalC[newC] ++;				
 			}
 		}
-		
-		
-			if(changed && my_rank>0){
-				MPI_Send(&cPontos, n, MPI_INT, 0, tag, MPI_COMM_WORLD);
+			if(my_rank>0){
+				MPI_Send(&incrCX, c, MPI_DOUBLE, 0, 3, MPI_COMM_WORLD);
+				MPI_Send(&incrCY, c, MPI_DOUBLE, 0, 4, MPI_COMM_WORLD);
+				MPI_Send(&totalC, c, MPI_INT, 0, 5, MPI_COMM_WORLD);
+			}else{
+				for(i = 0; i < n; i++){
+					MPI_Recv(&incrCX, c, MPI_DOUBLE, i, 3, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
+					MPI_Recv(&incrCY, c, MPI_DOUBLE, i, 4, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
+					MPI_Recv(&totalC, c, MPI_INT, i, 5, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
+				}
 			}
 
 			if(my_rank ==0) {
