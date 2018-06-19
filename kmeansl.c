@@ -30,8 +30,8 @@ int main(int argc, char** argv) {
 	int tam;
 	printf("Entre com o tamanho do vetor: ");
     scanf("%d", &tam);
-	int **pontos;
-	pontos= (int **) malloc( tam* sizeof(int*));
+	double **pontos;
+	pontos= (double **) malloc( tam* sizeof(double*));
     
 	
 	for(ind=0;ind<c;ind++){
@@ -41,7 +41,7 @@ int main(int argc, char** argv) {
 		
 	}
 	for(ind=0;ind<tam;ind++){
-		pontos[ind]= (int *) malloc( 2* sizeof(int));
+		pontos[ind]= (double *) malloc( 2* sizeof(double));
 		pontos[ind][0]=(double)(rand()%1000)/10;
 		pontos[ind][1]=(double)(rand()%1000)/10;
 		//printf("for inicio cluster %d tem como centroide o ponto (%f,%f)\n", ind, centroides[ind][0], centroides[ind][1]);
