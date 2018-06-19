@@ -7,11 +7,13 @@
 
 
 int main(int argc, char** argv) {
+	clock_t inicio, fim;
+	inicio = clock();
 	int my_rank;
 	int p; // número de processos
 	int c = 4; // número de centróides
 	int n = 9; // número de pontos cPontos
-	double pontos[9][2]; //matriz n x 2, onde n é o número de pontos no total
+	//double pontos[9][2]; //matriz n x 2, onde n é o número de pontos no total
 	int cPontos[9];
 	
 	int ind;
@@ -25,14 +27,21 @@ int main(int argc, char** argv) {
 	int totalCAux[4];
 	srand(time(NULL));
 	
+	int tam;
+	printf("Entre com o tamanho do vetor: ");
+    scanf("%d", &tam);
+	int **pontos;
+	pontos= (int **) malloc( tam* sizeof(int*));
+    
+	
 	for(ind=0;ind<c;ind++){
 	
 		centroides[ind][0]=(double)(rand()%1000)/10;
 		centroides[ind][1]=(double)(rand()%1000)/10;
 		
 	}
-	for(ind=0;ind<n;ind++){
-	
+	for(ind=0;ind<tam;ind++){
+		pontos[ind]= (int *) malloc( 2* sizeof(int));
 		pontos[ind][0]=(double)(rand()%1000)/10;
 		pontos[ind][1]=(double)(rand()%1000)/10;
 		//printf("for inicio cluster %d tem como centroide o ponto (%f,%f)\n", ind, centroides[ind][0], centroides[ind][1]);
@@ -195,7 +204,17 @@ int main(int argc, char** argv) {
 		for(i = 0; i < c; i++){
 			printf("O cluster %d tem como centroide o ponto (%f,%f)\n", i, centroides[i][0], centroides[i][1]);
 		}
+		
+		for(ind=0;ind<n;ind++){
+			free(pontos[ind]);
+		
+		//printf("for inicio cluster %d tem como centroide o ponto (%f,%f)\n", ind, centroides[ind][0], centroides[ind][1]);
+		}
+		free(pontos);
+		fim= clock();
+
+		printf("Duração: %lf \n",(double)((fim - inicio)/(CLOCKS_PER_SEC/1000)));
 	}
 	MPI_Finalize();
-
+	
 }
