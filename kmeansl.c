@@ -2,25 +2,16 @@
 #include <stdlib.h>
 #include <mpi.h>
 #include <math.h>
+#include <time.h>
 
 
-void preenche(double **a, int *b){ //aqui a gente enche o vetor de pontos
-
-}
-void sorteia(double **cs){ //aqui a gente sorteia 
-}
-
-
-int atualiza(double **cs,int *cPts, double **pts){ //aqui a gente atualiza os centroides
-	
-}
 
 int main(int argc, char** argv) {
 	int my_rank;
 	int p; // número de processos
 	int c = 4; // número de centróides
 	int n = 9; // número de pontos cPontos
-	double pontos[9][2] = {{0,0},{1,1},{2,2},{3,3},{4,4},{5,5},{6,6},{7,7}, {8,8}}; //matriz n x 2, onde n é o número de pontos no total
+	double pontos[9][2]; //matriz n x 2, onde n é o número de pontos no total
 	int cPontos[9];
 	
 	int ind;
@@ -32,7 +23,20 @@ int main(int argc, char** argv) {
 	double incrCXAux[4];
 	double incrCYAux[4];
 	int totalCAux[4];
-
+	srand(time(NULL));
+	
+	for(ind=0;ind<c;ind++){
+	
+		centroides[ind][0]=(double)(rand()%1000)/10;
+		centroides[ind][1]=(double)(rand()%1000)/10;
+		
+	}
+	for(ind=0;ind<n;ind++){
+	
+		pontos[ind][0]=(double)(rand()%1000)/10;
+		pontos[ind][1]=(double)(rand()%1000)/10;
+		//printf("for inicio cluster %d tem como centroide o ponto (%f,%f)\n", ind, centroides[ind][0], centroides[ind][1]);
+	}
 	
 	for(ind = 0; ind < n; ind++){
 		cPontos[ind] = -1;
@@ -44,36 +48,26 @@ int main(int argc, char** argv) {
 		totalC[ind] = 0;
 	}
 	
-	//for(ind = 0; ind < n; ind++){
-	//	pontos[ind][0] = ind;
-	//	pontos[ind][1] = ind;
-	//}
-	
-	//for(ind = 0; ind < c; ind++){
-	//	centroides[ind][0] = ind;
-	//	centroides[ind][1] = ind;
-	//}
-	
-	//preenche(pontos, cPontos);
-	//sorteia(centroides);
 	
 	
-	
-	
-	double total; // integral total
-	int source; // remetente da integral
-	int dest=0; // destino das integrais (nó 0)
-	int tag=200; // tipo de mensagem (único)
 	
 	//Declarar todas as variaveis necessarias
 	
 	MPI_Status status;
 
 	MPI_Init(&argc, &argv); //Aqui os processos iniciam.
+	
 	MPI_Comm_rank(MPI_COMM_WORLD, &my_rank);
 	MPI_Comm_size(MPI_COMM_WORLD, &p);
 	
-	int h = n/(p-1); //quantos pontos cada processo vai tomar conta
+	for(ind=0;ind<c;ind++){
+	
+		if(my_rank==0){
+		printf("for inicio cluster %d tem como centroide o ponto (%f,%f)\n", ind, centroides[ind][0], centroides[ind][1]);
+		}
+	}
+	
+	int h = n/(p); //quantos pontos cada processo vai tomar conta
 	int resto = n%p;
 	int meu_a, meu_b; // meu_a = primeiro ponto da minha sublista; meu_b = ultimo ponto
 	
@@ -93,10 +87,13 @@ int main(int argc, char** argv) {
 	while(!parada){ 	//loop principal. "condicao de parada" é nenhum centroide mudou de lugar
 		parada = 1;
 		if(!primeiraVez){ // se não é a primeira vez, temos que receber os valores dos centroides atualizados
+			
 			if(my_rank != 0){
 				for( j = 0; j < c; j++){
 					MPI_Recv(&centroides[j][0], 1, MPI_DOUBLE, 0, 1, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
 					MPI_Recv(&centroides[j][1], 1, MPI_DOUBLE, 0, 2, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
+					
+//	printf("for recebendoo cluster %d tem como centroide o ponto (%f,%f)\n", j, centroides[j][0], centroides[j][1]);
 				}
 			}else{
 				for(i = 1; i < p; i++){
@@ -108,12 +105,16 @@ int main(int argc, char** argv) {
 			}
 		}else primeiraVez = 0;
 		
-		MPI_Barrier(MPI_COMM_WORLD);
+		
 		
 		for(ind = 0; ind < c; ind++){
 			incrCX[ind] = 0;
 			incrCY[ind] = 0;
 			totalC[ind] = 0;
+			
+			incrCXAux[ind] = 0;
+			incrCYAux[ind] = 0;
+			totalCAux[ind] = 0;
 		}
 		
 		for( i = meu_a; i <= meu_b; i++){ //percorre os pontos de minha responsabilidade
@@ -125,6 +126,7 @@ int main(int argc, char** argv) {
 				lastDist = sqrt(pow((pontos[i][0] - centroides[cPontos[i]][0]), 2) + pow((pontos[i][1] - centroides[cPontos[i]][1]), 2));
 				oldC = cPontos[i];
 			}
+			newC=oldC;
 			for( j = 0; j < c; j++){ //percorre o vetor de centroides para ver qual é o mais próximo
 				newDist = sqrt(pow((pontos[i][0] - centroides[j][0]), 2) + pow((pontos[i][1] - centroides[j][1]), 2));
 				if(lastDist > newDist){
@@ -132,20 +134,30 @@ int main(int argc, char** argv) {
 					newC = j;
 					changed = 1;
 					
+				}else{
+					if(lastDist == newDist){
+						lastDist = newDist;
+						//newC = j;
+					}
 				}
 			}
+			cPontos[i] = newC;
+				
 			if(changed){
-				printf("ponto %d do cluster %d para o cluster %d\n", i, cPontos[i], newC);
-				cPontos[i] = newC;
-				incrCX[newC] = incrCX[newC] + pontos[i][0];
-				incrCY[newC] = incrCY[newC] + pontos[i][1];
-				totalC[newC] ++;
+				
 				parada = 0;
 				
 			}
+			incrCX[newC] = incrCX[newC] + pontos[i][0];
+				incrCY[newC] = incrCY[newC] + pontos[i][1];
+			
+				totalC[newC] ++;
+			
+				printf("ponto %d do cluster %d para o cluster %d\n", i, cPontos[i], newC);
 		}
-		printf("oi eu sou o %d\n", my_rank);
 		
+		//printf("oi eu sou o %d\n", my_rank);
+		MPI_Barrier(MPI_COMM_WORLD);
 		MPI_Reduce(&incrCY, &incrCYAux, c, MPI_DOUBLE, MPI_SUM, 0, MPI_COMM_WORLD);
 		MPI_Reduce(&incrCX, &incrCXAux, c, MPI_DOUBLE, MPI_SUM, 0, MPI_COMM_WORLD);
 		MPI_Reduce(&totalC, &totalCAux, c, MPI_INT, MPI_SUM, 0, MPI_COMM_WORLD);
@@ -157,26 +169,25 @@ int main(int argc, char** argv) {
 					if(totalCAux[i] != 0){
 						centroides[i][0] = incrCXAux[i]/totalCAux[i];
 						centroides[i][1] = incrCYAux[i]/totalCAux[i];
-						printf("centroide %d: %f, %f\n", i, centroides[i][0], centroides[i][1]);
 					}
+					
+						//printf("centroide %d: %f, %f\n", i, centroides[i][0], centroides[i][1]);
+						//printf("soma x: %d: %f, %f, %d\n", i, incrCXAux[i], incrCYAux[i],totalCAux[i]);
 				} 
 			}
 		}
-		MPI_Bcast(&parada, 1, MPI_INT, 0, MPI_COMM_WORLD);
 		MPI_Barrier(MPI_COMM_WORLD);
+		MPI_Bcast(&parada, 1, MPI_INT, 0, MPI_COMM_WORLD);
+		
 		//termino++;
 	}
 	if(my_rank !=0){
 		for( i = meu_a; i <= meu_b; i++){
-			MPI_Send(&pontos[i][0], 1, MPI_DOUBLE, 0, 1, MPI_COMM_WORLD);
-			MPI_Send(&pontos[i][1], 1, MPI_DOUBLE, 0, 2, MPI_COMM_WORLD);
-			MPI_Send(&cPontos[i], 1, MPI_INT, 0, 3, MPI_COMM_WORLD);
+			MPI_Send(&cPontos[i], 1, MPI_INT, 0, i, MPI_COMM_WORLD);
 		}
 	}else{
-		for( i = 3; i < n; i++){
-			MPI_Recv(&pontos[i][0], 1, MPI_DOUBLE, MPI_ANY_SOURCE, 1, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
-			MPI_Recv(&pontos[i][1], 1, MPI_DOUBLE, MPI_ANY_SOURCE, 2, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
-			MPI_Recv(&cPontos[i], 1, MPI_INT, MPI_ANY_SOURCE, 3, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
+		for( i = h; i < n; i++){
+			MPI_Recv(&cPontos[i], 1, MPI_INT, MPI_ANY_SOURCE, i, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
 		}
 		for( i = 0; i < n; i++){
 			printf("Ponto %d = (%f,%f) pertence ao cluster %d\n", i, pontos[i][0], pontos[i][1], cPontos[i]);
@@ -188,4 +199,3 @@ int main(int argc, char** argv) {
 	MPI_Finalize();
 
 }
-
