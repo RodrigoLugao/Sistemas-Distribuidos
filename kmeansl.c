@@ -12,9 +12,9 @@ int main(int argc, char** argv) {
 	int my_rank;
 	int p; // número de processos
 	int c = 4; // número de centróides
-	int n = 9; // número de pontos cPontos
+	int n = 100; // número de pontos cPontos
 	//double pontos[9][2]; //matriz n x 2, onde n é o número de pontos no total
-	int cPontos[9];
+	int cPontos[100];
 	
 	int ind;
 	//int *pontoCent = (int*) malloc(n * sizeof(int));
@@ -27,9 +27,10 @@ int main(int argc, char** argv) {
 	int totalCAux[4];
 	srand(time(NULL));
 	
-	int tam;
-	printf("Entre com o tamanho do vetor: ");
-    scanf("%d", &tam);
+	int tam=100;
+
+	//printf("Entre com o tamanho do vetor: ");
+    	//scanf("%d", &tam);
 	double **pontos;
 	pontos= (double **) malloc( tam* sizeof(double*));
     
@@ -72,7 +73,7 @@ int main(int argc, char** argv) {
 	for(ind=0;ind<c;ind++){
 	
 		if(my_rank==0){
-		printf("for inicio cluster %d tem como centroide o ponto (%f,%f)\n", ind, centroides[ind][0], centroides[ind][1]);
+		//printf("for inicio cluster %d tem como centroide o ponto (%f,%f)\n", ind, centroides[ind][0], centroides[ind][1]);
 		}
 	}
 	
@@ -162,7 +163,7 @@ int main(int argc, char** argv) {
 			
 				totalC[newC] ++;
 			
-				printf("ponto %d do cluster %d para o cluster %d\n", i, cPontos[i], newC);
+				//printf("ponto %d do cluster %d para o cluster %d\n", i, cPontos[i], newC);
 		}
 		
 		//printf("oi eu sou o %d\n", my_rank);
@@ -199,10 +200,10 @@ int main(int argc, char** argv) {
 			MPI_Recv(&cPontos[i], 1, MPI_INT, MPI_ANY_SOURCE, i, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
 		}
 		for( i = 0; i < n; i++){
-			printf("Ponto %d = (%f,%f) pertence ao cluster %d\n", i, pontos[i][0], pontos[i][1], cPontos[i]);
+			//printf("Ponto %d = (%f,%f) pertence ao cluster %d\n", i, pontos[i][0], pontos[i][1], cPontos[i]);
 		}
 		for(i = 0; i < c; i++){
-			printf("O cluster %d tem como centroide o ponto (%f,%f)\n", i, centroides[i][0], centroides[i][1]);
+			//printf("O cluster %d tem como centroide o ponto (%f,%f)\n", i, centroides[i][0], centroides[i][1]);
 		}
 		
 		for(ind=0;ind<n;ind++){
